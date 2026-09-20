@@ -96,6 +96,33 @@ Before writing, read the files relevant to the request. After an interaction pro
 
 Never overwrite unexplained user content. Prefer focused edits over regenerating whole files. Resetting a topic means returning its current state to `UNKNOWN` or `INTRODUCED` as requested and recording the reset in progress history; delete historical evidence only on an explicit deletion request.
 
+## Open loops
+
+Evidence is not the only thing worth writing, and keying every save to it loses the most
+useful state there is. A learner who stops halfway through an exercise has produced nothing
+to promote, so nothing gets recorded, and the next `continue` resumes from a stale next
+action as though the attempt never happened.
+
+Record the open loop when the turn ends with the learner holding an unfinished task, not at
+some later moment — there is no session-end signal to wait for. In the current `PROGRESS.md`
+entry, keep a few lines:
+
+```markdown
+### Open loop
+Attempting: writing the parser's lifetime annotations on `Token<'a>`
+Reached: compiles until the third method; borrow outlives the struct
+Blocked by: not sure whether the lifetime belongs on the struct or the method
+Assistance so far: hint level 2
+Next action: try the annotation on the struct, then explain why the third method fails
+```
+
+Replace it rather than appending a second one while the same attempt continues. An open loop
+is closed by the evidence that resolves it, or by the learner deciding to move on — either
+way, say so in the progress entry rather than leaving it dangling.
+
+An explicit `checkpoint` writes the same thing on request. It is a convenience for stopping
+deliberately, not the mechanism — the loop is recorded whether or not the learner asks.
+
 ## Initialization minimum
 
 For a new track, establish only what is needed to begin:

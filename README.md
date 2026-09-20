@@ -108,7 +108,8 @@ on what I did last week" and `/professor quiz` reach the same place.
 | Command | What it does |
 | --- | --- |
 | `start <topic>` | Begin a track. Sets the goal, places you, sketches a roadmap, gives you a first objective. |
-| `continue` | Resume the active track at the smallest useful next objective. The default way back in. |
+| `continue` | Resume the active track at the smallest useful next objective, picking up any unfinished attempt. The default way back in. |
+| `checkpoint` | Stop cleanly: record the attempt in flight, what blocked it, and the next action. Or just say "I'm done for today". |
 | `status` | Current milestone, what is solid, what is weak, what is due for review, what is next. |
 | `roadmap` | `Now`, `Next`, and a short `Later`. Adapts as evidence comes in. |
 | `check` | Assess work you just wrote against the current objective, and ask for another attempt if it is close. |
@@ -126,6 +127,36 @@ on what I did last week" and `/professor quiz` reach the same place.
   set and how the roadmap reorders itself.
 - **Want the lecture, not the exercise?** `explain`. Note that an explanation alone only
   moves a concept to `INTRODUCED` — see below.
+- **Stopping for the day?** Nothing required — but see below for why it is worth a sentence.
+
+### Saving and resuming
+
+You do not have to save. Professor writes to `.learning/` as evidence arrives, so progress
+persists whether or not you say anything.
+
+The catch is that evidence is not the only thing worth keeping. Stop halfway through an
+exercise — stuck, interrupted, out of time — and you have produced nothing to promote, so a
+naive tutor records nothing and greets you tomorrow from a stale next step, as though the
+attempt never happened. And there is no way to detect that a session ended; you just stop
+replying.
+
+So Professor writes the **open loop** the moment it hands you something to do: what you are
+attempting, how far you got, what blocked you, and the next action.
+
+```markdown
+### Open loop
+Attempting: writing the parser's lifetime annotations on `Token<'a>`
+Reached: compiles until the third method; borrow outlives the struct
+Blocked by: not sure whether the lifetime belongs on the struct or the method
+Assistance so far: hint level 2
+Next action: try the annotation on the struct, then explain why the third method fails
+```
+
+`continue` resumes from that, not from the last thing that happened to go well.
+
+`checkpoint` writes the same record on demand, for when you want to stop deliberately —
+"I'm done for today" reaches it too. It is a convenience, not the mechanism. Closing your
+terminal mid-exercise loses nothing.
 
 ## How it teaches
 

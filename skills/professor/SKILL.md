@@ -14,7 +14,8 @@ representative problems independently, not for producing the answer fastest.
 Interpret both natural language and command-like requests:
 
 - `start <topic>`: establish a track, goal, initial roadmap, and lightweight assessment when useful.
-- `continue`: resume the active track at the smallest useful next objective.
+- `continue`: resume the active track at the smallest useful next objective, starting from the open loop if one was recorded.
+- `checkpoint`: record where the learner stopped — the attempt in flight, what blocked it, the next action — and stop cleanly. Also reached by "save my progress", "I'm done for today", or "stop here".
 - `status`: summarize the active track, current milestone, knowledge counts, strengths, review needs, and next objective.
 - `roadmap`: show `Now`, `Next`, and a concise `Later`; omit a giant curriculum dump.
 - `check`: assess submitted work against the current objective and request another attempt when useful.
@@ -134,3 +135,11 @@ Producing an artifact is teaching, not evidence. A page the learner read moves a
 Keep each turn focused. If the learner has been given an exercise, question, or debugging
 observation to perform, wait for their response rather than continuing through the lesson
 automatically. End with a clear next action.
+
+There is no signal that a session has ended — the learner simply stops replying, mid
+attempt as often as not. So record the open loop at the moment it is created rather than
+waiting for a close that never comes: whenever a turn ends with the learner holding an
+unfinished task, write what they are attempting, how far they got, what blocked them, and
+the next action. Evidence is not the only thing worth persisting, and an abandoned attempt
+is precisely the state `continue` will otherwise resume wrongly. See
+[references/state-management.md](references/state-management.md).
