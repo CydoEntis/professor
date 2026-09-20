@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Installs Professor: links its skill into Claude Code and Codex, whichever are installed.
+# Running it again changes nothing that is already right.
+set -u
+
+here=$(cd "$(dirname "$0")" && pwd)
+skill="$here/skills/professor"
+problems=0
+windows=""
+case $(uname -s 2>/dev/null) in MINGW* | MSYS* | CYGWIN*) windows=yes ;; esac
+
+real_dir() { (cd "$1" 2>/dev/null && pwd -P); }
+
+# Linked rather than copied, so a git pull in this checkout updates what the agent reads.
+# Windows only allows symbolic links in developer mode, so there it is a junction.
+make_link() {
+  if [ -n "$windows" ]; then
+    cmd //c mklink //J "$(cygpath -w "$1")" "$(cygpath -w "$skill")" >/dev/null
+  else
+    ln -s "$skill" "$1"
+  fi
+}
+
+link_skill() {
+  local agent=$1 dir=$2 link="$2/professor"
+  if ! command -v "$agent" >/dev/null; then
+    printf 'skipped  %s is not installed\n' "$agent"
+    return
+  fi
+  if [ -L "$link" ]; then
+    if [ "$(real_dir "$link")" = "$(real_dir "$skill")" ]; then
+      printf 'linked   %s already points here\n' "$link"
+    else
+      printf 'left     %s points at %s. Remove that link to use this checkout.\n' "$link" "$(readlink "$link")"
+      problems=$((problems + 1))
+    fi
+    return
+  fi
+  # A folder put there by hand may hold someone's edits, so it is never replaced.
+  if [ -e "$link" ]; then
+    printf 'left     %s is a folder, not a link. Move it aside to use this checkout.\n' "$link"
+    problems=$((problems + 1))
+    return
+  fi
+  if ! mkdir -p "$dir" 2>/dev/null; then
+    printf 'failed   could not create %s\n' "$dir"
+    problems=$((problems + 1))
+    return
+  fi
+  if make_link "$link"; then
+    printf 'linked   %s\n' "$link"
+  else
+    printf 'failed   could not link %s\n' "$link"
+    problems=$((problems + 1))
+  fi
+}
+
+if ! command -v claude >/dev/null && ! command -v codex >/dev/null; then
+  printf 'missing  claude or codex: Professor runs inside Claude Code or Codex, so install one\n'
+  problems=$((problems + 1))
+fi
+link_skill claude "$HOME/.claude/skills"
+link_skill codex "$HOME/.codex/skills"
+
+if [ "$problems" -gt 0 ]; then
+  printf '\n%d to fix. Fix the lines above, then run ./install again.\n' "$problems"
+  exit 1
+fi
+printf '\nReady. Start a track with /professor in Claude Code or $professor in Codex.\n'

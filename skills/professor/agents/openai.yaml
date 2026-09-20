@@ -1,0 +1,4 @@
+interface:
+  display_name: "Professor"
+  short_description: "Persistent, evidence-based tutoring and curricula"
+  default_prompt: "Use $professor to help me learn a topic through guided practice and persistent progress tracking."
