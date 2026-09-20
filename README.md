@@ -239,22 +239,23 @@ It works in three tiers, cheapest first:
 | Tier | When | Permission |
 | --- | --- | --- |
 | **Inline text diagrams** | Default. Structure, sequence, state, memory layout, small trees | None needed |
-| **Mermaid** | Genuinely graph-shaped and worth keeping | Written to a file, never raw in chat |
-| **HTML file** | Must be interactive, steppable, or kept as reference | Asks first |
+| **Mermaid** | Genuinely graph-shaped and worth keeping | Into something that renders it, never raw in chat |
+| **A page you open** | Must be interactive, steppable, or kept as reference | Asks first |
 
 Mermaid never appears inline, for a boring practical reason: a ` ```mermaid ` fence does not
 render in a terminal. You would be reading source code. Box-drawing characters render
 everywhere, so that is the default.
 
-HTML artifacts land in the track's own directories — `lessons/`, `exercises/`,
-`assessments/`, `reviews/` — numbered in the order they were made, and linked from whatever
-file they belong to. Each one is a single self-contained page: no CDN, no network request,
-no build step, legible in light and dark, and printable.
+### How a quiz gets its answers back
 
-### How a quiz page gets its answers back
+In Claude Code, Professor publishes the quiz as an interactive artifact that keeps a small
+database. You take it in the browser, and Professor reads your answers back and grades them
+— nothing to copy. The artifact's URL gets saved into the track directory, because without
+it those answers cannot be read again later.
 
-A page in your browser cannot write to `.learning/`, so an interactive quiz that just scores
-you is a dead end — Professor never sees it. Instead the page ends with a copyable block:
+In Codex, or for a file you want in your own project, it writes a self-contained HTML page
+instead — no CDN, no network, no build step. That page cannot report anything back on its
+own, so it ends with a block you paste into the chat:
 
 ```text
 professor-result v1
@@ -270,11 +271,11 @@ Q3 elision-rules  [choice] answer=C expected=A
 looked-up: Q3
 ```
 
-Paste it back and Professor grades the written answers itself — the page never does, because
-a JavaScript string comparison is not comprehension and will be confidently wrong about
-prose. `[written]` is logged as recall, `[choice]` as recognition, and anything you looked up
-is logged as assisted. Reporting your results in your own words works just as well; the block
-is a convenience, not a requirement.
+Either way, Professor grades the written answers itself — the page never does, because a
+JavaScript string comparison is not comprehension and will be confidently wrong about prose.
+Written answers log as recall, choices as recognition, and anything you looked up logs as
+assisted. Reporting how it went in your own words works just as well; the artifact and the
+block are conveniences, not requirements.
 
 **Artifacts are not evidence.** A cheat sheet you read, an animation you watched, a lesson
 page you opened — all `INTRODUCED` at most, exactly like an explanation, no matter how much

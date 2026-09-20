@@ -121,8 +121,14 @@ what sits where — not to decorate a list. Before drawing one, consider asking 
 sketch it first; their drawing is evidence, yours is not.
 
 Inline text diagrams are the default and need no permission. A `mermaid` fence does not
-render in a terminal, so emit mermaid only into a file that will draw it. Write an HTML file
-only when the thing must be interactive, steppable, or kept, and ask before writing one.
+render in a terminal, so emit mermaid only into something that will draw it. Make a page
+only when the thing must be interactive, steppable, or kept, and ask before making one.
+
+Where the agent can publish an interactive artifact, prefer it for anything that collects
+answers: the page keeps a small database that can be read back afterwards, so a quiz
+reaches the learning record without the learner copying anything. Save its URL into the
+track directory, or the answers cannot be retrieved later. Where the agent cannot publish,
+write a self-contained HTML file that ends with a block the learner pastes back.
 
 Before drawing anything beyond a few boxes, or writing any file the learner will open, read
 [references/visuals.md](references/visuals.md).
