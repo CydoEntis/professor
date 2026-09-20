@@ -1,14 +1,49 @@
 # Professor
 
+<p align="center">
+  <img src="assets/professor-logo.png" alt="Professor logo" width="300">
+</p>
+
 A tutor that remembers what you actually proved you know.
 
-Professor runs learning tracks that survive across sessions. It keeps a roadmap, gives you
-the smallest useful exercise, waits while you attempt it, and only marks a concept learned
-when *you* produced the evidence — a working solution, a correct explanation, a diagnosis,
-a recalled answer. Explaining something to you does not count. Nor does copying the answer.
+Ask an AI to teach you something and it will explain beautifully, you will nod, and a week
+later none of it is there. The explanation felt like learning. It wasn't. Worse, when you
+get stuck it hands you the finished answer, you paste it in, it works, and the record of
+that session — if there is one at all — says you learned the topic.
 
-It runs in both Claude Code (`/professor`) and Codex (`$professor`) off one copy of the
+Professor is built to refuse that. It runs learning tracks that survive across sessions,
+gives you the smallest useful exercise and then *stops talking*, rations help up a ladder
+instead of dumping the solution, and marks a concept learned only when **you** produced the
+evidence. Explaining something to you does not promote it. Nor does copying the answer. Nor
+does saying "makes sense."
+
+It runs in both Claude Code (`/professor`) and Codex (`$professor`) from one copy of the
 skill.
+
+---
+
+## Contents
+
+- [What you need](#what-you-need)
+- [Install](#install)
+- [Your first session](#your-first-session)
+- [Commands](#commands)
+- [How it teaches](#how-it-teaches)
+- [Knowledge states](#knowledge-states)
+- [Where your progress lives](#where-your-progress-lives)
+- [What it will not do](#what-it-will-not-do)
+- [Working on more than one thing](#working-on-more-than-one-thing)
+- [Finishing a track](#finishing-a-track)
+- [Questions](#questions)
+- [Repository layout](#repository-layout)
+
+---
+
+## What you need
+
+- **Claude Code or Codex**, or both. Professor runs inside either.
+- **Nothing else.** It is Markdown instructions and a link script. No runtime, no
+  dependencies, no account, no network calls.
 
 ## Install
 
@@ -18,55 +53,301 @@ cd professor
 ./install
 ```
 
-The installer links `skills/professor/` into whichever of Claude Code and Codex you have.
-It links rather than copies, so `git pull` updates what the agent reads. Run it again any
-time; it changes nothing that is already right.
+The installer links `skills/professor/` into whichever of Claude Code and Codex it finds:
 
-## Use
+```text
+linked   /home/you/.claude/skills/professor
+linked   /home/you/.codex/skills/professor
 
-Start where you are, in the project you want to learn in:
+Ready. Start a track with /professor in Claude Code or $professor in Codex.
+```
 
-| You say | Professor does |
+It **links rather than copies**, so `git pull` updates what the agent reads — there is one
+source of truth and both agents share it. Run `./install` again whenever you like; it
+changes nothing that is already correct, and it will never overwrite a real folder someone
+put there by hand. On Windows it makes a junction, so you do not need developer mode.
+
+No restart needed. The skill is available in your next message.
+
+## Your first session
+
+Open your agent **in the project you want to learn in** — the directory matters, because
+that is where your progress is stored.
+
+```
+/professor start rust ownership
+```
+
+Professor will do four things and then hand the floor back to you:
+
+1. **Ask what you actually want to be able to do.** Not "learn Rust" — *ship a CLI without
+   fighting the borrow checker*. The goal grounds every later decision about what to teach
+   and what to skip.
+2. **Place you.** Usually three to seven quick questions or tiny tasks, and it stops early
+   once your level is obvious. If placement clearly does not matter, it skips this.
+3. **Sketch a roadmap** — `Now` in detail, `Next` in outline, `Later` as a list. It will not
+   design forty lessons up front, because the third one will be wrong by the time you get
+   there.
+4. **Give you one small objective**, and wait.
+
+That last part is the whole design. When Professor gives you something to attempt, the turn
+ends. It will not keep lecturing, and it will not do the exercise for you while you watch.
+
+Come back whenever — an hour or a month later:
+
+```
+/professor continue
+```
+
+## Commands
+
+Every command works as a slash command, a `$` command in Codex, or plain English. "Quiz me
+on what I did last week" and `/professor quiz` reach the same place.
+
+| Command | What it does |
 | --- | --- |
-| `/professor start rust ownership` | Sets the goal, places you, sketches a roadmap, gives you a first objective |
-| `/professor continue` | Picks up the active track at the next small objective |
-| `/professor status` | Current milestone, what is solid, what needs review, what is next |
-| `/professor quiz` | Active recall over your weakest and oldest material |
-| `/professor check` | Grades the work you just wrote against the current objective |
-| `/professor review` | Spaced retrieval, preferring your real work over flashcards |
-| `/professor explain <topic>` | A direct lesson, then a question back to you |
+| `start <topic>` | Begin a track. Sets the goal, places you, sketches a roadmap, gives you a first objective. |
+| `continue` | Resume the active track at the smallest useful next objective. The default way back in. |
+| `status` | Current milestone, what is solid, what is weak, what is due for review, what is next. |
+| `roadmap` | `Now`, `Next`, and a short `Later`. Adapts as evidence comes in. |
+| `check` | Assess work you just wrote against the current objective, and ask for another attempt if it is close. |
+| `quiz` | Active recall over your weakest and oldest material. It will not teach you the answer first. |
+| `review` | Spaced retrieval, preferring your real work over flashcards. |
+| `explain <topic>` | A direct lesson — concept, why it matters, mental model, example, common mistake — then a question back to you. |
+| `resources` | Curated high-quality sources, and why each one is worth your time. |
+| `reset-topic <topic>` | Reset one topic's state after confirming scope. Keeps your history unless you explicitly ask to delete it. |
 
-Natural language works the same: "quiz me on what I learned last week."
+### When to reach for which
 
-## State
+- **Stuck on something you are building?** `check` — paste what you wrote.
+- **Been away a while?** `continue`, or `review` if it has been weeks.
+- **Not sure it stuck?** `quiz`. Being wrong here is useful; it is how `NEEDS_REVIEW` gets
+  set and how the roadmap reorders itself.
+- **Want the lecture, not the exercise?** `explain`. Note that an explanation alone only
+  moves a concept to `INTRODUCED` — see below.
 
-Everything lives in `.learning/` at the root of whatever project you are learning in —
-plain Markdown you can read, edit, and commit (or gitignore) yourself.
+## How it teaches
+
+### It waits
+
+If you have been handed an exercise, a question, or something to go observe, the turn is
+over. This is the single most important behavior in the skill, and the easiest one to
+undervalue until you have used a tutor that does not do it.
+
+### The hint ladder
+
+When you are stuck, Professor climbs from the bottom, one rung at a time, and only after
+you have actually attempted something:
+
+| Rung | What you get |
+| --- | --- |
+| 0 | "What have you tried? What do you think is happening?" |
+| 1 | Conceptual direction |
+| 2 | A pointer to the relevant concept, invariant, tool, or API |
+| 3 | Pseudocode or a structured outline |
+| 4 | A partial implementation or one worked step |
+| 5 | The complete solution |
+
+Rung 5 is entirely legitimate — when you ask for it outright, when you are genuinely stuck
+after real attempts, or when studying a reference implementation *is* the lesson. It is not
+withheld to be precious about it. It is simply **logged**, because rungs 3 through 5 mean
+the work no longer demonstrates that you could do it alone.
+
+In Claude Code, Professor can offer you the next rung as a real choice prompt. Asking which
+rung you want is not itself a hint and costs you nothing.
+
+### Modes
+
+**Guided** is the default: short explanation, small task, review your attempt, smallest
+useful hint, try again.
+
+| Mode | When |
+| --- | --- |
+| Guided | Default |
+| Socratic | You may already have the mental model, or you prefer to discover it |
+| Review | You have written something and want it critiqued, not rewritten |
+| Quiz | Active recall, no teaching before you answer |
+| Exam | Minimal hints, stated boundaries, recorded separately from coached practice |
+| Explain | You want the lesson directly |
+
+Just ask for one by name, any time.
+
+### Recall beats recognition
+
+Answering in your own words is **recall**. Picking the right answer off a list is
+**recognition** — much easier, and much weaker evidence that you could produce it unaided.
+
+Professor asks open questions by default. It uses multiple choice only where the options
+genuinely *are* the task — which of these four has the race condition, which index will the
+planner choose, is this safe or unsafe — and then it asks you to justify the pick. Those
+answers get logged as `(recognition)` and **cannot promote a concept past `PRACTICING`.**
+
+This is why Professor does not lean on Claude Code's interactive pickers for the actual
+knowledge checks, even though it has them. They are used for decisions *about* the session
+— which track to resume, which mode, which hint rung, confirming a reset — where a fixed
+list of options really is the whole answer space.
+
+### Spaced review
+
+Roughly 1, 3, 7, 14, and 30 days, treated as guidance rather than a schedule to obey.
+Professor prefers to slip an old concept into whatever you are working on now over quizzing
+you on something disconnected. Passing a delayed or transferred application is what moves
+`DEMONSTRATED` to `RETAINED`.
+
+## Knowledge states
+
+Every concept in a track sits in exactly one state:
+
+| State | Meaning |
+| --- | --- |
+| `UNKNOWN` | Not meaningfully encountered yet |
+| `INTRODUCED` | Explained to you or observed — but not yet used by you |
+| `PRACTICING` | You are attempting or applying it, with support |
+| `DEMONSTRATED` | You used or explained it correctly without substantial help |
+| `RETAINED` | You did it again later, or in a meaningfully different context |
+| `NEEDS_REVIEW` | Previously solid, but recent recall or application was weak |
+
+The usual path is `UNKNOWN → INTRODUCED → PRACTICING → DEMONSTRATED → RETAINED`, but
+**evidence drives the transition, not sequence**. Anything can fall back to `NEEDS_REVIEW`,
+and recovering returns it to `DEMONSTRATED` or `RETAINED` depending on what you showed.
+
+### What counts as evidence
+
+**Counts:** code you wrote that works, an accurate explanation in your own words, a bug you
+diagnosed, an exercise you solved, a real quiz answer, applying it somewhere new.
+
+**Does not count:** "I understand." A solution Professor wrote. Code you pasted from
+somewhere. Having had it explained to you, however clearly.
+
+Each entry records enough to audit the judgment later:
+
+```markdown
+### Transactions
+State: DEMONSTRATED
+Last evidence: 2026-09-19
+Assistance: Hint level 1
+Evidence:
+- Explained atomicity and fixed a transaction boundary independently. (recall)
+Review after: 2026-09-26
+```
+
+Recurring misconceptions are tracked separately — the wrong model, the corrective one, the
+evidence, and whether it is still `Active`.
+
+## Where your progress lives
+
+Everything lives in `.learning/` at the root of whatever project you are learning in. Plain
+Markdown. Read it, edit it, commit it, or gitignore it — it is yours, and Professor
+preserves anything you write there by hand.
 
 ```text
 .learning/
-|-- PROFILE.md          how you like to be taught
-|-- TRACKS.md           your tracks, and which is active
-`-- tracks/<slug>/
-    |-- GOAL.md         what you want to be able to do
-    |-- ROADMAP.md      Now / Next / Later
-    |-- KNOWLEDGE.md    every concept, its state, and the evidence
-    |-- PROGRESS.md     dated sessions
-    `-- ...             resources, questions, lessons, assessments, reviews
+├── PROFILE.md              how you like to be taught — pace, examples, constraints
+├── TRACKS.md               your tracks, their status, and which one is active
+└── tracks/<track-slug>/
+    ├── GOAL.md             what you want to be able to do, and what "done" looks like
+    ├── ROADMAP.md          Now / Next / Later / Possible
+    ├── KNOWLEDGE.md        every concept, its state, its evidence, its review date
+    ├── PROGRESS.md         dated session log — work, evidence, struggles, next action
+    ├── RESOURCES.md        vetted sources and when each is useful
+    ├── QUESTIONS.md        your open questions, which become future lessons
+    ├── PROJECT.md          the thing you are building, if there is one
+    ├── lessons/
+    ├── exercises/
+    ├── assessments/
+    └── reviews/
 ```
 
-Concepts move `UNKNOWN → INTRODUCED → PRACTICING → DEMONSTRATED → RETAINED`, and any of
-them can fall back to `NEEDS_REVIEW`. Every transition carries the evidence that caused it
-and the level of help you had, so the record stays honest about what you can do alone.
+Subdirectories appear only when there is something to put in them, and trivial exchanges do
+not get their own file.
 
-## Why the help is rationed
+Two rules Professor holds itself to: it writes **only** inside `.learning/`, never your
+project files; and it never claims state was saved unless the files were really written.
 
-Professor uses a hint ladder — a nudge before a pointer, a pointer before pseudocode,
-pseudocode before code — and records when it went high, because heavily assisted work is
-not evidence of independence. It will hand you the whole answer if you ask for it, or if
-you are genuinely stuck after real attempts. It just will not pretend that taught you
-something.
+**Should you commit it?** If you are learning in a real repo and want the history, yes —
+`KNOWLEDGE.md` diffs are a genuinely nice record of getting better at something. If it is a
+scratch directory, or the repo is shared with people who do not need your learning log, add
+`.learning/` to `.gitignore`. This repo ignores its own.
 
-The same logic governs question format. Answering in your own words is *recall*; picking
-from a list is *recognition*. Professor prefers open questions, uses multiple choice only
-where the options are the real task, and logs which you did.
+## What it will not do
+
+Unless you explicitly ask, Professor will not generate whole features for you, rewrite your
+solution, quietly fix what you submitted, or scaffold a large project. It prefers a pointed
+question, a hint, a diagram, pseudocode, a tiny isolated example, a documentation pointer,
+or a critique.
+
+It also holds to one to three issues at a time, because a twelve-point review of your first
+attempt teaches nothing, and it teaches a technology when it solves a problem you actually
+have rather than because it is fashionable.
+
+**It is not a refusal machine.** Ask for the answer and you get the answer. The only thing
+Professor insists on is being honest in the record about how you got it.
+
+If you just want the code, don't use Professor — ask your agent normally. It is for the
+times you want to end up able to do it yourself.
+
+## Working on more than one thing
+
+Tracks are independent. `TRACKS.md` indexes them and marks one active, so `continue` knows
+where to go. Name a track directly to switch to it, and in Claude Code you will get a picker
+when it is ambiguous.
+
+Knowledge and progress stay separate per track, but relevant prior evidence gets reused
+explicitly — if you demonstrated recursion in one track, Professor knows that rather than
+teaching it at you again from scratch.
+
+## Finishing a track
+
+A track is ready to close when the required concepts are at least `DEMONSTRATED`, the core
+ones show real retention, you have completed a capstone or equivalent, and you can explain
+your key decisions unprompted.
+
+You get a completion summary: what you demonstrated, your strongest areas, what is still
+weak, and reasonable next topics. It will not claim mastery the evidence does not support —
+that honesty is the entire point of keeping the record.
+
+## Questions
+
+**Do I need to use the commands?** No. Plain English routes the same way.
+
+**What if it misjudges my level?** Tell it. Explicit preferences go into `PROFILE.md`
+immediately. You can also edit `KNOWLEDGE.md` yourself.
+
+**Can I reset one topic without losing everything?** `reset-topic <topic>`. It confirms
+scope first, resets that topic's state, and records the reset in your history. History is
+deleted only if you explicitly ask.
+
+**Does it work offline?** Yes, apart from whatever your agent itself needs. Professor adds
+no network calls. `resources` will suggest sources to go read, which you will want a
+connection for.
+
+**Can I move my progress between machines?** Copy the `.learning/` directory, or commit it.
+There is no hidden state anywhere else.
+
+**Why is it not teaching me the thing I asked about?** Probably because it does not serve
+your stated goal yet. It is in `Later` or `Possible` in `ROADMAP.md`, with a reason. Say you
+want it now and it moves.
+
+**Claude Code or Codex — any difference?** Same teaching, same files, same standards. Claude
+Code can show real choice prompts for session decisions; Codex asks the same questions in
+prose. Nothing about what gets taught or how evidence is judged changes.
+
+## Repository layout
+
+```text
+professor/
+├── skills/professor/
+│   ├── SKILL.md                        loaded every run — routing, the loop, the boundaries
+│   ├── references/
+│   │   ├── state-management.md         read before anything touches .learning/
+│   │   └── teaching-protocols.md       modes, hint ladder, reviews, assessments
+│   └── agents/openai.yaml              Codex display metadata
+├── assets/
+├── install                             links the skill into Claude Code and Codex
+├── AGENTS.md                           standards for working on this repo
+└── CLAUDE.md                           pointer to AGENTS.md, so the two cannot drift
+```
+
+If you are changing Professor, read [AGENTS.md](./AGENTS.md) first. The short version:
+`SKILL.md` stays short and behavioral, detail goes in `references/`, one copy serves both
+agents, and evidence decides state.
