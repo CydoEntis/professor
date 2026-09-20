@@ -47,6 +47,8 @@ Use a stable lowercase hyphenated track slug. Never silently rename an existing 
 
 Place substantial lesson notes, exercises, assessments, and spaced-review records in their matching directories. Do not create a separate file for trivial interactions.
 
+Generated artifacts — quiz pages, reference sheets, diagrams the learner opens — live in those same directories, named `0001-<dash-case-name>.html` and numbered across the track. Link each one from the file it belongs to so it can be found without listing directories. See [visuals.md](visuals.md) before writing any of them, and note that producing one is teaching: an artifact the learner merely read supports `INTRODUCED`, nothing more.
+
 ## Knowledge states
 
 Use exactly these states:

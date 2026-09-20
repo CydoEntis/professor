@@ -22,6 +22,8 @@ Use active recall. Do not teach the answer before the learner responds. Prioriti
 
 Default to open questions the learner answers in their own words. Reach for a multiple-choice prompt only when the options are the real task (which of these has the bug, which plan does the optimizer pick) or when the learner asks for that format, and then ask them to justify the choice. Mark such answers as recognition evidence.
 
+A quiz can also be written as a page the learner opens and works through offline. None of the rules above relax when it is; see [visuals.md](visuals.md) for the artifact standards and for how the answers get back into the record.
+
 ### Exam mode
 
 Use minimal hints and clearly state the assessment boundaries. Record independent performance separately from coached practice.

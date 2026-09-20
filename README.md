@@ -29,6 +29,7 @@ skill.
 - [Your first session](#your-first-session)
 - [Commands](#commands)
 - [How it teaches](#how-it-teaches)
+- [Diagrams, quizzes, and other artifacts](#diagrams-quizzes-and-other-artifacts)
 - [Knowledge states](#knowledge-states)
 - [Where your progress lives](#where-your-progress-lives)
 - [What it will not do](#what-it-will-not-do)
@@ -194,6 +195,60 @@ Professor prefers to slip an old concept into whatever you are working on now ov
 you on something disconnected. Passing a delayed or transferred application is what moves
 `DEMONSTRATED` to `RETAINED`.
 
+## Diagrams, quizzes, and other artifacts
+
+Professor draws when a picture shows a **mechanism** — what points at what, what happens in
+what order, what sits where in memory — and not to decorate a list. Often the better move
+is to make you draw it first: "sketch the ownership graph as you understand it, then I'll
+show you mine" produces recall evidence and exposes the misconception in one step. A
+picture you looked at produces neither.
+
+It works in three tiers, cheapest first:
+
+| Tier | When | Permission |
+| --- | --- | --- |
+| **Inline text diagrams** | Default. Structure, sequence, state, memory layout, small trees | None needed |
+| **Mermaid** | Genuinely graph-shaped and worth keeping | Written to a file, never raw in chat |
+| **HTML file** | Must be interactive, steppable, or kept as reference | Asks first |
+
+Mermaid never appears inline, for a boring practical reason: a ` ```mermaid ` fence does not
+render in a terminal. You would be reading source code. Box-drawing characters render
+everywhere, so that is the default.
+
+HTML artifacts land in the track's own directories — `lessons/`, `exercises/`,
+`assessments/`, `reviews/` — numbered in the order they were made, and linked from whatever
+file they belong to. Each one is a single self-contained page: no CDN, no network request,
+no build step, legible in light and dark, and printable.
+
+### How a quiz page gets its answers back
+
+A page in your browser cannot write to `.learning/`, so an interactive quiz that just scores
+you is a dead end — Professor never sees it. Instead the page ends with a copyable block:
+
+```text
+professor-result v1
+track: rust-ownership
+artifact: assessments/0003-borrow-checker-quiz.html
+date: 2026-09-19
+
+Q1 borrow-vs-move [choice] answer=B expected=B
+   because "s1 was moved, so the later read has nothing to read"
+Q2 lifetime-scope [written] "the borrow ends at its last use, not at the end of the block"
+Q3 elision-rules  [choice] answer=C expected=A
+   because "I guessed"
+looked-up: Q3
+```
+
+Paste it back and Professor grades the written answers itself — the page never does, because
+a JavaScript string comparison is not comprehension and will be confidently wrong about
+prose. `[written]` is logged as recall, `[choice]` as recognition, and anything you looked up
+is logged as assisted. Reporting your results in your own words works just as well; the block
+is a convenience, not a requirement.
+
+**Artifacts are not evidence.** A cheat sheet you read, an animation you watched, a lesson
+page you opened — all `INTRODUCED` at most, exactly like an explanation, no matter how much
+work went into making it.
+
 ## Knowledge states
 
 Every concept in a track sits in exactly one state:
@@ -340,7 +395,8 @@ professor/
 │   ├── SKILL.md                        loaded every run — routing, the loop, the boundaries
 │   ├── references/
 │   │   ├── state-management.md         read before anything touches .learning/
-│   │   └── teaching-protocols.md       modes, hint ladder, reviews, assessments
+│   │   ├── teaching-protocols.md       modes, hint ladder, reviews, assessments
+│   │   └── visuals.md                  when to draw, and the artifact standards
 │   └── agents/openai.yaml              Codex display metadata
 ├── assets/
 ├── install                             links the skill into Claude Code and Codex

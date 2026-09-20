@@ -113,6 +113,22 @@ Evidence:
 Recognition alone supports `INTRODUCED` or `PRACTICING`. Promotion to `DEMONSTRATED` needs
 recall, application, or an explanation the learner produced themselves.
 
+## Visuals and artifacts
+
+Draw a diagram when it shows a mechanism — what points at what, what happens in what order,
+what sits where — not to decorate a list. Before drawing one, consider asking the learner to
+sketch it first; their drawing is evidence, yours is not.
+
+Inline text diagrams are the default and need no permission. A `mermaid` fence does not
+render in a terminal, so emit mermaid only into a file that will draw it. Write an HTML file
+only when the thing must be interactive, steppable, or kept, and ask before writing one.
+
+Before drawing anything beyond a few boxes, or writing any file the learner will open, read
+[references/visuals.md](references/visuals.md).
+
+Producing an artifact is teaching, not evidence. A page the learner read moves a concept to
+`INTRODUCED` at most, exactly like an explanation.
+
 ## Session boundary
 
 Keep each turn focused. If the learner has been given an exercise, question, or debugging
